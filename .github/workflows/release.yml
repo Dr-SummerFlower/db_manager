@@ -44,27 +44,13 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\installer.iss"
 
-      - name: 安装 git-chglog
-        run: |
-          choco install git-chglog -y --no-progress
-        shell: powershell
-
-      - name: 生成变更日志
-        id: changelog
-        run: |
-          # 初始化 git-chglog 配置（如果不存在）
-          if (-not (Test-Path .chglog/config.yml)) {
-            git-chglog --init
-          }
-          
-          # 生成变更日志
-          git-chglog -o CHANGELOG.md ${{ github.ref_name }}
-
-          # 读取内容并编码为 base64
-          $commits = Get-Content -Path CHANGELOG.md -Raw
-          $changelog_base64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($commits))
-          "CHANGELOG_BASE64=$changelog_base64" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-        shell: powershell
+      - name: Generate changelog
+        id: gen_changelog
+        uses: bdashrad/git-chglog-action@v2.0.3
+        with:
+          next_version: "${{ github.ref_name }}".replace('v', '')  # 移除 'v' 前缀
+        env:
+          CHGLOG_CONFIG: .chglog/config.yml
 
       - name: 准备发布文件
         run: |

@@ -1,0 +1,5 @@
+style: github
+template: CHANGELOG.tpl.md
+info:
+  title: 变更日志
+  repository_url: https://github.com/Dr-SummerFlower/db_manager
