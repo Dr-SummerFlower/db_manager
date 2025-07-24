@@ -1,0 +1,12 @@
+{
+  "name": "Redis",
+  "home": "utils/redis",
+  "bin": "utils/redis/",
+  "exePath": "utils/redis/redis-server.exe",
+  "dataPath": "utils/redis/data",
+  "logPath": "utils/redis/log",
+  "configPath": "utils/redis/redis.conf",
+  "port": 6379,
+  "user": "",
+  "password": ""
+}

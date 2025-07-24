@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:db_manager.ViewModels"
+        xmlns:views1="clr-namespace:db_manager.Views"
+        xmlns:models1="clr-namespace:db_manager.Models"
+        xmlns:viewModels="clr-namespace:db_manager.ViewModels"
+        mc:Ignorable="d"
+        Width="400" Height="550"
+        MinWidth="400" MinHeight="550"
+        Title="数据库管理器"
+        x:Class="db_manager.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel">
+
+    <Design.DataContext>
+        <viewModels:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部标题栏 - 添加 Name="TitleBar" 用于拖动 -->
+        <Border Name="TitleBar" Grid.Row="0" Height="40" Background="#F0F0F0">
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="10,0">
+                <!-- 左上角Logo -->
+                <Image Grid.Column="0" Width="24" Height="24" Source="avares://db_manager/Assets/tray_light.png"/>
+
+                <!-- 窗口标题 -->
+                <TextBlock Grid.Column="1" Text="数据库管理器"
+                           VerticalAlignment="Center" HorizontalAlignment="Center"
+                           FontWeight="Bold"/>
+
+                <!-- 右上角设置按钮 -->
+                <Button x:Name="SettingsButton" Grid.Column="2" Content="⚙️" FontSize="16"
+                        Background="Transparent" BorderThickness="0"
+                        Click="OnSettingsButtonClick">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="主题">
+                                <MenuItem Header="亮色主题" Click="OnLightThemeClick" />
+                                <MenuItem Header="暗色主题" Click="OnDarkThemeClick" />
+                            </MenuItem>
+                            <MenuItem Header="查看日志" Click="OnViewLogsClick" />
+                            <Separator />
+                            <MenuItem Header="退出" Click="OnExitClick" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 滚动卡片区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      Background="{DynamicResource ThemeBackgroundBrush}">
+            <ItemsControl ItemsSource="{Binding Cards}" Margin="5">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models1:CardItem">
+                        <views1:CardControl />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Window>

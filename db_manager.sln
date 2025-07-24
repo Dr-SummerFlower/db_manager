@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "db_manager", "db_manager\db_manager.csproj", "{6A924773-F5E2-4BD8-A110-95E09C5F95CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A924773-F5E2-4BD8-A110-95E09C5F95CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A924773-F5E2-4BD8-A110-95E09C5F95CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A924773-F5E2-4BD8-A110-95E09C5F95CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A924773-F5E2-4BD8-A110-95E09C5F95CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

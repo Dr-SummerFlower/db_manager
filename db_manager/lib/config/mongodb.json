@@ -1,0 +1,12 @@
+{
+  "name": "MongoDB",
+  "home": "utils/mongodb",
+  "bin": "utils/mongodb/bin/",
+  "exePath": "utils/mongodb/bin/mongod.exe",
+  "dataPath": "utils/mongodb/data",
+  "logPath": "utils/mongodb/log",
+  "configPath": "utils/mongodb/config.yaml",
+  "port": 27017,
+  "user": "",
+  "password": ""
+}

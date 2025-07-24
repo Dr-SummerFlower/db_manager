@@ -1,0 +1,63 @@
+### 通用忽略 ###
+*.log
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.ncrunchsolution
+*.ncrunchproject
+*.vs/
+.vs/
+.vscode/
+.DS_Store
+Thumbs.db
+
+### 编译输出 ###
+bin/
+obj/
+dist/
+
+### IDE 配置文件 ###
+.idea/
+*.iml
+*.ipr
+*.iws
+
+### NuGet 包 ###
+packages/
+*.nupkg
+nuget.exe
+
+### 二进制文件 ###
+*.dll
+*.pdb
+*.exe
+*.cache
+*.resources
+*.lib
+*.exp
+*.ilk
+
+### 运行时文件 ###
+runtimes/
+apphost.exe
+*.runtimeconfig.json
+
+### 项目特定忽略 ###
+# 忽略调试日志目录
+logs/
+
+# 忽略 utils 中的第三方二进制文件
+utils
+lib/utils
+bin/Debug/net8.0/utils/
+bin/Release/net8.0/utils/
+
+# 忽略构建时的配置文件副本
+bin/Debug/net8.0/config/
+bin/Release/net8.0/config/
+
+# 忽略 Avalonia 临时文件
+avalonia.xml
+
+*.diff

@@ -1,0 +1,12 @@
+{
+  "name": "MySQL",
+  "home": "utils/mysql",
+  "bin": "utils/mysql/bin/",
+  "exePath": "utils/mysql/bin/mysqld.exe",
+  "dataPath": "utils/mysql/data",
+  "logPath": "utils/mysql/log",
+  "configPath": "utils/mysql/my.ini",
+  "port": 3306,
+  "user": "root",
+  "password": "root"
+}

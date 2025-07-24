@@ -1,0 +1,20 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:db_manager.Converters"
+             x:Class="db_manager.App">
+
+    <Application.Resources>
+        <converters:EnumToDisplayNameConverter x:Key="EnumToDisplayName" />
+        <converters:NotEqualsConverter x:Key="NotEquals" />
+
+        <SolidColorBrush x:Key="LightBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="DarkBackground" Color="#202020"/>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+        </Style>
+    </Application.Styles>
+</Application>

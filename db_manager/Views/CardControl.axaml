@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:db_manager.Models"
+             xmlns:converters="clr-namespace:db_manager.Converters"
+             mc:Ignorable="d"
+             d:DesignWidth="250" d:DesignHeight="60"
+             x:Class="db_manager.Views.CardControl"
+             x:DataType="models:CardItem">
+
+    <UserControl.Resources>
+        <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
+    </UserControl.Resources>
+
+    <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="5">
+        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto" Margin="10">
+            <!-- Logo -->
+            <Image Grid.Column="0" Width="40" Height="40"
+                   Source="{Binding LogoPath}" />
+
+            <!-- 名称和状态 -->
+            <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold"/>
+
+
+                <!-- 状态指示灯和状态文本 -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- 状态指示灯 -->
+                    <Ellipse Width="8" Height="8" Fill="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                             Margin="0,0,5,0" VerticalAlignment="Center"/>
+
+                    <!-- 状态文本 -->
+                    <TextBlock Text="{Binding Status}" FontSize="12" Foreground="Gray"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 控制按钮 -->
+            <Button Grid.Column="2" Width="60" Height="30"
+                    Command="{Binding ToggleCommand}"
+                    IsEnabled="{Binding State, Converter={StaticResource NotEquals}, ConverterParameter={x:Static models:ButtonState.Loading}}"
+                    Content="{Binding State, Converter={StaticResource EnumToDisplayName}}">
+                <Button.Styles>
+                    <Style Selector="Button:disabled">
+                        <Setter Property="Content" Value="加载中" />
+                    </Style>
+                </Button.Styles>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>
