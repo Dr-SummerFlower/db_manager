@@ -1,0 +1,109 @@
+name: Build and release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 代码检出
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: 恢复依赖
+        run: dotnet restore .\db_manager\db_manager.csproj
+
+      - name: 构建应用
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          dotnet publish .\db_manager\db_manager.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=true `
+            -p:Version=$version `
+            --output ./bin/win-x64
+
+      - name: 安装 Inno Setup
+        run: |
+          choco install innosetup -y --no-progress --force
+        shell: powershell
+
+      - name: 设置版本号
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          (Get-Content .\installer.iss) -replace '#define MyAppVersion "0.0.1"', "#define MyAppVersion `"$version`"" | Set-Content .\installer.iss
+
+      - name: 构建安装包
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\installer.iss"
+
+      - name: 生成变更日志
+        id: changelog
+        run: |
+          # 获取当前标签
+          $currentTag = "${{ github.ref_name }}"
+          
+          # 获取上一个标签
+          $previousTag = git describe --tags --abbrev=0 "$currentTag^" 2>$null
+          if (-not $previousTag) {
+            # 如果没有找到上一个标签，则获取初始提交
+            $previousTag = (git rev-list --max-parents=0 HEAD)[0]
+          }
+          
+          # 获取两个标签之间的提交信息
+          $commits = git log --pretty=format:"- %s" "$previousTag..$currentTag"
+          
+          # 格式化输出
+          $changelog = "### 变更日志`n`n"
+          $changelog += $commits
+          
+          # 保存到文件
+          Set-Content -Path .\CHANGELOG.md -Value $changelog
+          
+          # 输出到环境变量
+          Write-Output "CHANGELOG=$changelog" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: 准备发布文件
+        run: |
+          mkdir artifacts
+          Copy-Item .\dist\DBManagerSetup.exe .\artifacts\DBManager-${{ github.ref_name }}-Setup.exe
+          Compress-Archive -Path .\bin\win-x64\* -DestinationPath .\artifacts\DBManager-${{ github.ref_name }}-Portable.zip
+          
+          # 生成校验文件
+          (Get-FileHash .\artifacts\DBManager-${{ github.ref_name }}-Setup.exe -Algorithm SHA256).Hash | Out-File -Encoding ASCII .\artifacts\DBManager-${{ github.ref_name }}-Setup.exe.sha256
+          (Get-FileHash .\artifacts\DBManager-${{ github.ref_name }}-Portable.zip -Algorithm SHA256).Hash | Out-File -Encoding ASCII .\artifacts\DBManager-${{ github.ref_name }}-Portable.zip.sha256
+          
+          # 添加变更日志到发布包
+          Copy-Item .\CHANGELOG.md .\artifacts\CHANGELOG-${{ github.ref_name }}.md
+
+      - name: 发布到 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ### 安装说明
+            - **安装版**: 使用 `DBManager-*-Setup.exe` 进行完整安装
+            - **便携版**: 解压 `DBManager-*-Portable.zip` 直接运行
+            
+            ${{ env.CHANGELOG }}
+          files: |
+            artifacts/DBManager-${{ github.ref_name }}-Setup.exe
+            artifacts/DBManager-${{ github.ref_name }}-Setup.exe.sha256
+            artifacts/DBManager-${{ github.ref_name }}-Portable.zip
+            artifacts/DBManager-${{ github.ref_name }}-Portable.zip.sha256
+            artifacts/CHANGELOG-${{ github.ref_name }}.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
