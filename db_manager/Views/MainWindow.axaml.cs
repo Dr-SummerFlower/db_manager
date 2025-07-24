@@ -7,13 +7,9 @@ using db_manager.ViewModels;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 
 
@@ -25,16 +21,11 @@ public partial class MainWindow : Window
     private const string TrayLightIcon = "avares://db_manager/Assets/tray_light.png";
     private const string TrayDarkIcon = "avares://db_manager/Assets/tray_dark.png";
     private readonly DispatcherTimer _focusCheckTimer;
-    // private bool _isAnimating;
-    // private readonly TranslateTransform _slideTransform = new();
 
     public MainWindow()
     {
         InitializeComponent();
         DataContext = new MainWindowViewModel();
-
-        // 设置窗口的渲染变换
-        // RenderTransform = _slideTransform;
 
         // 固定窗口大小
         CanResize = false;
@@ -144,109 +135,26 @@ public partial class MainWindow : Window
     // 从托盘恢复窗口
     private Task RestoreFromTray()
     {
-        // if (_isAnimating) return;
-        // _isAnimating = true;
-        //
-        // try
-        // {
-            // 重置变换位置
-            // _slideTransform.Y = 0;
+        SetWindowPositionToBottomRight();
 
-            // 确保窗口显示在右下角
-            SetWindowPositionToBottomRight();
+        // 显示窗口但不在任务栏显示
+        Show();
+        WindowState = WindowState.Normal;
+        Topmost = true;
 
-            // 显示窗口但不在任务栏显示
-            Show();
-            WindowState = WindowState.Normal;
-            Topmost = true; // 确保窗口在前
-
-            // // 创建动画
-            // var animation = new Animation
-            // {
-            //     Duration = TimeSpan.FromMilliseconds(300),
-            //     Easing = new CubicEaseOut(),
-            //     Children =
-            //     {
-            //         new KeyFrame
-            //         {
-            //             Cue = new Cue(0.0),
-            //             Setters =
-            //             {
-            //                 new Setter(TranslateTransform.YProperty, Height)
-            //             }
-            //         },
-            //         new KeyFrame
-            //         {
-            //             Cue = new Cue(1.0),
-            //             Setters =
-            //             {
-            //                 new Setter(TranslateTransform.YProperty, 0.0)
-            //             }
-            //         }
-            //     }
-            // };
-            //
-            // // 运行动画
-            // await animation.RunAsync(this, CancellationToken.None);
-
-            // 完成恢复
-            Activate();
-            Focus(); // 确保获得焦点
-            return Task.CompletedTask;
-        // }
-        // finally
-        // {
-        //     _isAnimating = false;
-        //     Topmost = false; // 恢复正常层级
-        // }
+        // 完成恢复
+        Activate();
+        Focus(); // 确保获得焦点
+        return Task.CompletedTask;
     }
 
     // 最小化到托盘
     private Task MinimizeToTray()
     {
-        // if (_isAnimating) return;
-        // _isAnimating = true;
-
-        // try
-        // {
-            // // 创建滑动动画
-            // var animation = new Animation
-            // {
-            //     Duration = TimeSpan.FromMilliseconds(300),
-            //     Easing = new CubicEaseIn(),
-            //     Children =
-            //     {
-            //         new KeyFrame
-            //         {
-            //             Cue = new Cue(0.0),
-            //             Setters =
-            //             {
-            //                 new Setter(TranslateTransform.YProperty, 0.0)
-            //             }
-            //         },
-            //         new KeyFrame
-            //         {
-            //             Cue = new Cue(1.0),
-            //             Setters =
-            //             {
-            //                 new Setter(TranslateTransform.YProperty, Height)
-            //             }
-            //         }
-            //     }
-            // };
-            //
-            // // 运行动画
-            // await animation.RunAsync(this, CancellationToken.None);
-
-            // 完成最小化
-            WindowState = WindowState.Minimized;
-            Hide();
-            return Task.CompletedTask;
-        // }
-        // finally
-        // {
-        //     _isAnimating = false;
-        // }
+        // 完成最小化
+        WindowState = WindowState.Minimized;
+        Hide();
+        return Task.CompletedTask;
     }
 
     protected override void OnOpened(EventArgs e)

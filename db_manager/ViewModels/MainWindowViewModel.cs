@@ -131,42 +131,39 @@ public class MainWindowViewModel : ViewModelBase
         });
     }
 
-    public void StopAllDatabases()
+    private void StopAllDatabases()
     {
-        foreach (var card in _runningCards.ToList()) // 使用ToList避免修改集合
+        foreach (var card in _runningCards.ToList().Where(card => card.State == ButtonState.Stop))
         {
-            if (card.State == ButtonState.Stop)
-            {
-                card.State = ButtonState.Loading;
-                card.Status = "停止中...";
+            card.State = ButtonState.Loading;
+            card.Status = "停止中...";
 
-                // 直接停止数据库
-                Task.Run(() =>
+            // 直接停止数据库
+            Task.Run(() =>
+            {
+                try
                 {
-                    try
+                    var success = DatabaseManager.StopDatabase(card.Config!);
+                    Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        bool success = DatabaseManager.StopDatabase(card.Config);
-                        Dispatcher.UIThread.InvokeAsync(() =>
+                        if (success)
                         {
-                            if (success)
-                            {
-                                card.State = ButtonState.Start;
-                                card.Status = "已停止";
-                                _runningCards.Remove(card);
-                            }
-                            else
-                            {
-                                card.State = ButtonState.Stop;
-                                card.Status = "停止失败";
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        LogManager.Log($"停止{card.Name}时出错: {ex.Message}");
-                    }
-                });
-            }
+                            card.State = ButtonState.Start;
+                            card.Status = "已停止";
+                            _runningCards.Remove(card);
+                        }
+                        else
+                        {
+                            card.State = ButtonState.Stop;
+                            card.Status = "停止失败";
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Log($"停止{card.Name}时出错: {ex.Message}");
+                }
+            });
         }
     }
 

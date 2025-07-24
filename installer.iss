@@ -2,7 +2,7 @@
 #define MyAppPublisher "Dr-SummerFlower"
 #define MyAppURL "https://github.com/Dr-SummerFlower/db_manager"
 #define MyAppExeName "db_manager.exe"
-#define MyAppVersion GetEnv('MyAppVersion')
+#define MyAppVersion "1.0.0"
 
 [Setup]
 AppId={{5976EF7D-01A1-428E-A235-E589AB455CE5}
