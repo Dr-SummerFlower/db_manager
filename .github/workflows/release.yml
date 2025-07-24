@@ -47,28 +47,12 @@ jobs:
       - name: 生成变更日志
         id: changelog
         run: |
-          # 获取当前标签
-          $currentTag = "${{ github.ref_name }}"
-          
-          # 获取上一个标签
-          $previousTag = git describe --tags --abbrev=0 "$currentTag^" 2>$null
-          if (-not $previousTag) {
-            # 如果没有找到上一个标签，则获取初始提交
-            $previousTag = (git rev-list --max-parents=0 HEAD)[0]
-          }
-          
-          # 获取两个标签之间的提交信息
-          $commits = git log --pretty=format:"- %s" "$previousTag..$currentTag"
-          
-          # 格式化输出
-          $changelog = "### 变更日志`n`n"
-          $changelog += $commits
-          
-          # 保存到文件
-          Set-Content -Path .\CHANGELOG.md -Value $changelog
-          
-          # 输出到环境变量
-          Write-Output "CHANGELOG=$changelog" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $previous_tag = git describe --tags --abbrev=0 ${{ github.ref_name }}^
+          $commits = git log --pretty=format:"- %s" $previous_tag..${{ github.ref_name }} | Out-String
+          "### 变更日志`n`n$commits" | Set-Content -Path CHANGELOG.md -Encoding UTF8
+          $changelog_json = $commits | ConvertTo-Json -Compress
+          "CHANGELOG=$changelog_json" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+        shell: powershell
 
       - name: 准备发布文件
         run: |
@@ -76,11 +60,9 @@ jobs:
           Copy-Item .\dist\DBManagerSetup.exe .\artifacts\DBManager-${{ github.ref_name }}-Setup.exe
           Compress-Archive -Path .\bin\win-x64\* -DestinationPath .\artifacts\DBManager-${{ github.ref_name }}-Portable.zip
           
-          # 生成校验文件
           (Get-FileHash .\artifacts\DBManager-${{ github.ref_name }}-Setup.exe -Algorithm SHA256).Hash | Out-File -Encoding ASCII .\artifacts\DBManager-${{ github.ref_name }}-Setup.exe.sha256
           (Get-FileHash .\artifacts\DBManager-${{ github.ref_name }}-Portable.zip -Algorithm SHA256).Hash | Out-File -Encoding ASCII .\artifacts\DBManager-${{ github.ref_name }}-Portable.zip.sha256
           
-          # 添加变更日志到发布包
           Copy-Item .\CHANGELOG.md .\artifacts\CHANGELOG-${{ github.ref_name }}.md
 
       - name: 发布到 GitHub Release
@@ -89,11 +71,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: |
-            ### 安装说明
-            - **安装版**: 使用 `DBManager-*-Setup.exe` 进行完整安装
-            - **便携版**: 解压 `DBManager-*-Portable.zip` 直接运行
-            
-            ${{ env.CHANGELOG }}
+            ${{ fileContents('CHANGELOG.md') }}
           files: |
             artifacts/DBManager-${{ github.ref_name }}-Setup.exe
             artifacts/DBManager-${{ github.ref_name }}-Setup.exe.sha256
