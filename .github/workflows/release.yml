@@ -40,14 +40,9 @@ jobs:
           choco install innosetup -y --no-progress --force
         shell: powershell
 
-      - name: 设置版本号
-        run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          (Get-Content .\installer.iss) -replace '#define MyAppVersion "0.0.1"', "#define MyAppVersion `"$version`"" | Set-Content .\installer.iss
-
       - name: 构建安装包
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\installer.iss"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/dMyAppVersion=$version" "$env:GITHUB_WORKSPACE\installer.iss"
 
       - name: 生成变更日志
         id: changelog
