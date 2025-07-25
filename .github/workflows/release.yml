@@ -51,6 +51,13 @@ jobs:
           Expand-Archive -Path git-chglog.zip -DestinationPath .\chglog
         shell: powershell
 
+      - name: 初始化 git-chglog 配置
+        run: |
+          if (-not (Test-Path .chglog)) {
+            .\chglog\git-chglog.exe --init
+          }
+        shell: powershell
+
       - name: 生成变更日志
         id: changelog
         run: |
