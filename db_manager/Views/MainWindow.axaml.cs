@@ -18,6 +18,7 @@ namespace db_manager.Views;
 public partial class MainWindow : Window
 {
     private TrayIcon? _trayIcon;
+    private const int MarginPx = 2;
     private const string TrayLightIcon = "avares://db_manager/Assets/tray_light.png";
     private const string TrayDarkIcon = "avares://db_manager/Assets/tray_dark.png";
     private readonly DispatcherTimer _focusCheckTimer;
@@ -71,6 +72,9 @@ public partial class MainWindow : Window
         };
         _focusCheckTimer.Tick += CheckWindowFocus;
         _focusCheckTimer.Start();
+
+        this.ScalingChanged += OnScalingChanged;
+        this.PositionChanged += OnPositionChanged;
 
         Closing += (_, e) =>
         {
@@ -160,26 +164,70 @@ public partial class MainWindow : Window
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        AdjustSizeForDpiAndFit();
         SetWindowPositionToBottomRight();
+    }
+
+    private void OnScalingChanged(object? sender, EventArgs e)
+    {
+        AdjustSizeForDpiAndFit();
+        SetWindowPositionToBottomRight();
+    }
+
+    private void OnPositionChanged(object? sender, PixelPointEventArgs e)
+    {
+        // 跨屏移动 / 工作区改变时，重新收敛尺寸+定位
+        AdjustSizeForDpiAndFit();
+        SetWindowPositionToBottomRight();
+    }
+
+    private void AdjustSizeForDpiAndFit()
+    {
+        // 目标设计尺寸（DIP）
+        const double desiredDipW = 300d;
+        const double desiredDipH = 450d;
+
+        var screen = Screens.ScreenFromVisual(this) ?? Screens.Primary ?? Screens.All[0];
+        var wa = screen.WorkingArea; // 像素(px)
+        var scale = RenderScaling <= 0 ? 1.0 : RenderScaling; // px / dip
+
+        // 将工作区从 px 转成 DIP，用于和 Width/Height 比较
+        var maxDipW = Math.Floor(wa.Width / scale) - (MarginPx * 2.0 / scale);
+        var maxDipH = Math.Floor(wa.Height / scale) - (MarginPx * 2.0 / scale);
+
+        // 设定最小的可接受窗口（防止被压得太小）
+        const double minDipW = 260d;
+        const double minDipH = 380d;
+
+        // 实际采用的 DIP 尺寸 = 在 [min, max] 中夹紧设计尺寸
+        var finalDipW = Math.Clamp(desiredDipW, minDipW, Math.Max(minDipW, maxDipW));
+        var finalDipH = Math.Clamp(desiredDipH, minDipH, Math.Max(minDipH, maxDipH));
+
+        // 应用到窗口大小，并把 Min/Max 固定为同值，继续保持“不可拉伸”的产品设计
+        Width = finalDipW;
+        Height = finalDipH;
+        MinWidth = finalDipW;
+        MinHeight = finalDipH;
+        MaxWidth = finalDipW;
+        MaxHeight = finalDipH;
     }
 
     // 设置窗口位置到右下角
     private void SetWindowPositionToBottomRight()
     {
-        // 获取主屏幕信息 - 使用当前窗口所在的屏幕
         var screen = Screens.ScreenFromVisual(this) ?? Screens.Primary ?? Screens.All[0];
-        var workingArea = screen.WorkingArea;
+        var wa = screen.WorkingArea; // px
+        var scale = RenderScaling <= 0 ? 1.0 : RenderScaling;
 
-        // 添加边距防止黑边
-        const int margin = 2;
+        var widthPx  = (int)Math.Round(Width  * scale);
+        var heightPx = (int)Math.Round(Height * scale);
 
-        // 计算右下角位置（考虑任务栏位置）
-        var newX = workingArea.X + workingArea.Width - (int)Width - margin;
-        var newY = workingArea.Y + workingArea.Height - (int)Height - margin;
+        var newX = wa.X + wa.Width  - widthPx  - MarginPx;
+        var newY = wa.Y + wa.Height - heightPx - MarginPx;
 
-        // 确保位置在屏幕内
-        newX = Math.Max(workingArea.X, newX);
-        newY = Math.Max(workingArea.Y, newY);
+        // 确保在屏内
+        newX = Math.Max(wa.X, newX);
+        newY = Math.Max(wa.Y, newY);
 
         Position = new PixelPoint(newX, newY);
     }
