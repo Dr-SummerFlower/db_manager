@@ -37,19 +37,24 @@ jobs:
 
       - name: 安装 Inno Setup
         run: |
-          choco install innosetup -y --no-progress --force
-        shell: powershell
+          # 发现异常时报错
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+
+          curl.exe -OL https://files.jrsoftware.org/is/6/innosetup-6.4.3.exe
+          .\innosetup-6.4.3.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+          "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+        shell: pwsh
 
       - name: 构建安装包
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\installer.iss"
+        run: ISCC.exe "$env:GITHUB_WORKSPACE\installer.iss"
 
       - name: 安装 git-chglog
         run: |
           $url = "https://github.com/git-chglog/git-chglog/releases/download/v0.15.4/git-chglog_0.15.4_windows_amd64.zip"
           Invoke-WebRequest -Uri $url -OutFile git-chglog.zip
           Expand-Archive -Path git-chglog.zip -DestinationPath .\chglog
-        shell: powershell
+        shell: pwsh
 
       - name: 生成变更日志
         id: changelog
@@ -58,7 +63,7 @@ jobs:
           $content = Get-Content -Path CHANGELOG.md -Raw
           $base64Content = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($content))
           "CHANGELOG_BASE64=$base64Content" | Out-File -FilePath $env:GITHUB_ENV -Append
-        shell: powershell
+        shell: pwsh
 
       - name: 准备发布文件
         run: |
